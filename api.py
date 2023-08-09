@@ -21,7 +21,7 @@ def get_catalog(board='/g/'):
         
         threads[header] = {
             "id": res[i]['no'],
-            "media": f"https://i.4cdn.org/g/{id}.{media.split('.')[1]}" if media else None,
+            "media": f"https://i.4cdn.org/g/{res[i]['tim']}.{media.split('.')[1]}" if media and media.split('.')[1] in ['jpeg', 'jpg', 'png'] else None,
             "content": content,
             "link": f"https://boards.4channel.org/g/thread/{res[i]['no']}"
         }
