@@ -2,6 +2,7 @@ import re
 import requests
 
 TAGS_CLEANER = re.compile('<.*?>||&.*;')
+CONTENT_CLEANER = re.compile('</span>||<span class=".*">||<br>||<wbr>')  # TODO
 
 def get_catalog(board='/g/'):
     # only first page
@@ -12,7 +13,7 @@ def get_catalog(board='/g/'):
     for i in range(1, 6):
         media = f"{res[i].get('filename')}{res[i].get('ext')}"
         header = res[i].get('sub')  # try to fetch title
-        content = re.sub(TAGS_CLEANER, '', res[i].get('com'))
+        content = re.sub(TAGS_CLEANER, '', res[i].get('com', ''))
         header = content if not header else header  # try to fetch content if title is empty
         if header:
             header = re.sub(TAGS_CLEANER, '', header[:50] + '...' if len(header) > 70 else header)
@@ -21,13 +22,10 @@ def get_catalog(board='/g/'):
         
         threads[header] = {
             "id": res[i]['no'],
-            "media": f"https://i.4cdn.org/g/{res[i]['tim']}.{media.split('.')[1]}" if media and media.split('.')[1] in ['jpeg', 'jpg', 'png'] else None,
-            "content": content,
+            "media": f"https://i.4cdn.org/g/{res[i]['tim']}.{media.split('.')[1]}",
+            "content": re.sub(CONTENT_CLEANER, '', res[i].get('com', '')),
+            "ext": res[i].get('ext'), 
             "link": f"https://boards.4channel.org/g/thread/{res[i]['no']}"
         }
-
+    
     return threads
-
-
-if __name__ == '__main__':
-    print(get_catalog())
