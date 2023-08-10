@@ -7,7 +7,6 @@ from api import get_catalog
 # The Kostil
 CURRENT_CATALOG = {}
 
-
 async def threads(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global CURRENT_CATALOG
     catalog = get_catalog()
