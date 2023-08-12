@@ -23,13 +23,14 @@ async def thread(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await query.answer()
     for _, content in catalog.items():
         if str(content['id']) == query.data:
+            link_button = InlineKeyboardMarkup([[InlineKeyboardButton(f'Read Thread', url=f"{content['link']}")]])
             if content['ext'] in ['.jpeg', '.jpg', '.png', '.webp']:    
-                await query.message.reply_photo(content["media"], caption=content['content'], parse_mode='HTML')
+                await query.message.reply_photo(content["media"], caption=content['content'][:1000], parse_mode='HTML', reply_markup=link_button)
             # telegram don't support .webm
             elif content['ext'] == '.mp4':
-                await query.message.reply_video(content["media"], caption=content['content'], parse_mode='HTML')
+                await query.message.reply_video(content["media"], caption=content['content'][:1000], parse_mode='HTML', reply_markup=link_button)
             else:
-                await query.message.reply_html(content['content'])
+                await query.message.reply_html(content['content'][:1000], reply_markup=link_button)
 
 
 app = ApplicationBuilder().token(getenv("GOBLIN_TOKEN")).build()

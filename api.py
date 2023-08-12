@@ -1,8 +1,19 @@
 import re
 import requests
 
-TAGS_CLEANER = re.compile('<.*?>||&.*;')
-CONTENT_CLEANER = re.compile('</span>||<span class=".*">||<br>||<wbr>')  # TODO
+HEADER_CLEANER = re.compile('<.*?>||&.*;')
+TAGS_CLEANER = re.compile('<.*?>')
+TAGS = ['<b>', '<strong>', '<i>', '<u>', '<ins>', '<s>', '<strike>', '<del>', '<code>', '<pre>']
+TAGS = TAGS + [f"</{tag}" for tag in TAGS]
+
+
+def tags_cleaner(content: str) -> str:
+    all_tags = TAGS_CLEANER.findall(content)
+    for tag in all_tags:
+        if tag not in TAGS:
+            content = content.replace(tag, ' ')
+    return content
+
 
 def get_catalog(board='/g/'):
     # only first page
@@ -13,7 +24,7 @@ def get_catalog(board='/g/'):
     for i in range(1, 6):
         media = f"{res[i].get('filename')}{res[i].get('ext')}"
         header = res[i].get('sub')  # try to fetch title
-        content = re.sub(TAGS_CLEANER, '', res[i].get('com', ''))
+        content = re.sub(HEADER_CLEANER, '', res[i].get('com', ''))
         header = content if not header else header  # try to fetch content if title is empty
         if header:
             header = re.sub(TAGS_CLEANER, '', header[:50] + '...' if len(header) > 70 else header)
@@ -23,7 +34,7 @@ def get_catalog(board='/g/'):
         threads[header] = {
             "id": res[i]['no'],
             "media": f"https://i.4cdn.org/g/{res[i]['tim']}.{media.split('.')[1]}",
-            "content": re.sub(CONTENT_CLEANER, '', res[i].get('com', '')),
+            "content": tags_cleaner(res[i].get('com', '')),
             "ext": res[i].get('ext'), 
             "link": f"https://boards.4channel.org/g/thread/{res[i]['no']}"
         }
